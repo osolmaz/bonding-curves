@@ -15,12 +15,12 @@ SIGMA_0 = 0.8
 
 ##### # of points
 UPPER = 6
+# UPPER = 20
 # UPPER = 500
 
 
 def E_trig(alpha):
     return alpha*E_trig0
-
 
 
 def sigma(alpha):
@@ -35,7 +35,6 @@ def sigma(alpha):
     # m = 1/Delta_p*sqrt(2*Delta_p*E_trig0/SIGMA_0+P0**2)
     # result = 2*Delta_p*alpha*E_trig0/(Delta_p**2*m**2*alpha**2 - P0**2)
 
-
     # if alpha <= 1:
     #     return 1.
     # else:
@@ -48,7 +47,6 @@ def sigma_step(alpha):
 
 # sigma = lambda alpha: SIGMA_0**(alpha-1)
 
-
 def S_trig(alpha):
     a = P0
     b = Delta_p/2
@@ -56,8 +54,12 @@ def S_trig(alpha):
 
     return (sqrt(a**2 + 4*b*c) - a)/(2*b)
 
-def S(R):
-    current_milestone = floor(R/E_trig0)
+def S(R, alpha=None):
+    if not alpha:
+        current_milestone = floor(R/E_trig0)
+    else:
+        current_milestone = alpha
+
     sig = sigma(current_milestone+1)
     P0_ = P0*sig
     Delta_p_ = Delta_p*sig
@@ -65,6 +67,14 @@ def S(R):
     R_ = R
 
     return (sqrt(P0_**2+2*Delta_p_*R_)-P0_)/Delta_p_
+
+def S_no_milestones(R):
+    return (sqrt(P0**2+2*Delta_p*R)-P0)/Delta_p
+
+# def S_milestones(R, alpha=0):
+#     P_0 =
+#     return (sqrt(P0**2+2*Delta_p*R)-P0)/Delta_p
+
 
 def S_vs_R(start, end, increment):
 
@@ -129,16 +139,32 @@ plt.grid()
 ###################
 
 plt.figure()
-# X = np.linspace(0, (UPPER+.1)*E_trig0, 100000)
-# Y = [S(x) for x in X]
-X, Y = S_vs_R(0, (UPPER+.1)*E_trig0, 1)
-plt.plot(X, Y)
+X, Y = S_vs_R(0, (UPPER)*E_trig0, 1)
+plt.plot(X, Y, label='Supply with milestones')
 
-X = list(range(0, UPPER+2))
+X = np.linspace(E_trig0, (UPPER)*E_trig0, 10000)
+Y = [S_no_milestones(x) for x in X]
+plt.plot(X, Y, label='Supply without milestones')
+
+# for i in range(2, UPPER):
+#     X = np.linspace(0, E_trig0*i, 10000)
+#     Y =
+
+X = list(range(0, UPPER+1))
 Y = [S_trig(x) for x in X]
 X = [x*E_trig0 for x in X]
-plt.plot(X, Y)
+plt.plot(X, Y, '--', label='Reference line')
+plt.plot(X[1:], Y[1:], 'o', label='Milestones', markersize=5)
 plt.grid()
+
+plt.yticks(Y)
+ax = plt.gca()
+ax.set_yticklabels(["${0:,.0f}$".format(y) for y in Y])
+
+plt.legend()
+
+plt.xlabel('R')
+plt.ylabel('S')
 
 ##################
 
