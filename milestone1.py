@@ -14,7 +14,7 @@ SIGMA_0 = 0.8
 # SIGMA_0 = 0.99
 
 ##### # of points
-UPPER = 6
+UPPER = 5
 # UPPER = 20
 # UPPER = 500
 
@@ -81,6 +81,7 @@ def S_vs_R(start, end, increment):
     R_cur = start
     S = []
     R = []
+    P = []
     next_milestone = floor(start/E_trig0) + 1
     just_jumped = False
 
@@ -94,6 +95,8 @@ def S_vs_R(start, end, increment):
         R.append(R_cur)
         S.append(S_cur)
 
+        P.append(P0_ + S_cur*Delta_p_)
+
         if R_cur + increment > next_milestone*E_trig0 and not just_jumped:
             R_cur = next_milestone*E_trig0
             just_jumped = True
@@ -106,7 +109,7 @@ def S_vs_R(start, end, increment):
             R_cur += increment
 
 
-    return R, S
+    return R, S, P
 
 
 X = list(range(1,UPPER+1))
@@ -139,22 +142,24 @@ plt.grid()
 ###################
 
 plt.figure()
-X, Y = S_vs_R(0, (UPPER)*E_trig0, 1)
-plt.plot(X, Y, label='Supply with milestones')
+R_, S_, P_ = S_vs_R(0, (UPPER)*E_trig0, 1)
+plt.plot(R_, S_, label='Supply with milestones', linewidth=3)
 
 X = np.linspace(E_trig0, (UPPER)*E_trig0, 10000)
 Y = [S_no_milestones(x) for x in X]
 plt.plot(X, Y, label='Supply without milestones')
 
-# for i in range(2, UPPER):
-#     X = np.linspace(0, E_trig0*i, 10000)
-#     Y =
+for i in range(1, UPPER):
+    X = np.linspace(0, E_trig0*(i)*sigma_step(i), 10000)
+    Y = [S(x, alpha=i) for x in X]
+    plt.plot(X, Y, '--', color='gray')
+
 
 X = list(range(0, UPPER+1))
 Y = [S_trig(x) for x in X]
 X = [x*E_trig0 for x in X]
 plt.plot(X, Y, '--', label='Reference line')
-plt.plot(X[1:], Y[1:], 'o', label='Milestones', markersize=5)
+plt.plot(X[1:], Y[1:], 'o', label='Milestones', markersize=8)
 plt.grid()
 
 plt.yticks(Y)
@@ -186,7 +191,11 @@ plt.xticks(X)
 plt.xlabel('Milestone')
 plt.ylabel('Payout amount [ETH]')
 
+##################
 
+plt.figure()
+R_, S_, P_ = S_vs_R(0, (UPPER)*E_trig0, 1)
+plt.plot(S_, P_, label='Supply with milestones', linewidth=3)
 
 
 # plt.yticks(Y)
